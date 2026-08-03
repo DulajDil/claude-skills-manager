@@ -1,0 +1,31 @@
+{
+  "name": "Hitman's Skill Set",
+  "author": "Hitman (DulajDil)",
+  "description": "A small, opinionated set of everyday Claude Code skills — commit hygiene, debugging discipline, code explanation, PR writing, and test generation.",
+  "skills": [
+    {
+      "id": "commit",
+      "tagline": "Conventional commit messages read off the staged diff."
+    },
+    {
+      "id": "commit-and-push",
+      "tagline": "Format, build-check, commit, then push — with approval gates."
+    },
+    {
+      "id": "debug",
+      "tagline": "Reproduce, locate, hypothesise, verify, fix — no guessing."
+    },
+    {
+      "id": "explain",
+      "tagline": "Explain code: what, how, why, and the gotchas."
+    },
+    {
+      "id": "pr-description",
+      "tagline": "Draft a PR title, summary, and test plan from branch commits."
+    },
+    {
+      "id": "test",
+      "tagline": "Thorough unit tests that follow the project's existing framework."
+    }
+  ]
+}

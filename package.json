@@ -1,0 +1,24 @@
+{
+  "name": "claude-skills-manager",
+  "version": "1.0.0",
+  "description": "Web UI to manage Claude AI Skills",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build": "cd client && npm run build && cd ../server && npm run build",
+    "start": "cd server && npm start",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "usage": "node scripts/usage.mjs daily",
+    "usage:today": "node scripts/usage.mjs daily --today --breakdown",
+    "usage:week": "node scripts/usage.mjs daily --days 7",
+    "usage:monthly": "node scripts/usage.mjs monthly",
+    "usage:session": "node scripts/usage.mjs session --days 20",
+    "usage:blocks": "node scripts/usage.mjs blocks --days 10",
+    "usage:watch": "node scripts/usage.mjs daily --days 7 --breakdown --watch --interval 60",
+    "usage:watch:blocks": "node scripts/usage.mjs blocks --days 10 --watch --interval 60"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
