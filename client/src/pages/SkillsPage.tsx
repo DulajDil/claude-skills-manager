@@ -30,17 +30,6 @@ const AVATAR_COLORS = [
   'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
 ]
 
-const BORDER_COLORS = [
-  'border-l-violet-400 dark:border-l-violet-500',
-  'border-l-blue-400 dark:border-l-blue-500',
-  'border-l-emerald-400 dark:border-l-emerald-500',
-  'border-l-amber-400 dark:border-l-amber-500',
-  'border-l-rose-400 dark:border-l-rose-500',
-  'border-l-cyan-400 dark:border-l-cyan-500',
-  'border-l-fuchsia-400 dark:border-l-fuchsia-500',
-  'border-l-orange-400 dark:border-l-orange-500',
-]
-
 function getColorIndex(name: string): number {
   let hash = 0
   for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0
@@ -66,7 +55,7 @@ function formatDate(iso: string) {
 
 function SkillCardSkeleton() {
   return (
-    <Card className="border-l-4 border-l-border">
+    <Card>
       <CardHeader>
         <div className="flex items-center gap-3">
           <Skeleton className="h-9 w-9 rounded-lg" />
@@ -199,11 +188,10 @@ export function SkillsPage() {
             )}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((skill) => {
-                const idx = getColorIndex(skill.name)
                 return (
                   <Card
                     key={skill.id}
-                    className={`group cursor-pointer border-l-[3px] transition-all duration-150 hover:-translate-y-0.5 hover:shadow-sm ${BORDER_COLORS[idx]}`}
+                    className="group cursor-pointer transition-all duration-150 hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-sm"
                     onClick={() => navigate(`/skills/${skill.id}`)}
                   >
                     <CardHeader className="pb-2">
