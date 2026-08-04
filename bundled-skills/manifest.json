@@ -12,6 +12,10 @@
       "tagline": "Format, build-check, commit, then push — with approval gates."
     },
     {
+      "id": "generate-commit-message",
+      "tagline": "Strict Conventional Commits v1.0.0 output with commitlint validation and attribution footers."
+    },
+    {
       "id": "code-reviewer",
       "tagline": "Review a diff for correctness, security, and maintainability, ranked by severity."
     },

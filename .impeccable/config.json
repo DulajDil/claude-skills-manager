@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "client/src/index.css"
+        ],
+        "createdAt": "2026-08-04T00:47:43.468Z",
+        "reason": "Line 85 is .markdown-content blockquote using border-l-4 with the neutral border-border token — standard blockquote typography, not a coloured accent stripe on a card. User confirmed."
+      }
+    ]
+  }
+}

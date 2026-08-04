@@ -36,7 +36,7 @@ export function Header({ onNewSkill }: HeaderProps) {
         <div className="flex items-center gap-6">
           <Link to="/" className="flex items-center gap-2 shrink-0 group">
             <Logo />
-            <span className="font-semibold hidden sm:block tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <span className="font-semibold hidden sm:block tracking-tight" style={{ fontFamily: "'Bricolage Grotesque', sans-serif" }}>
               Claude Skills
             </span>
           </Link>

@@ -12,5 +12,8 @@ dist/
 # OS cruft
 .DS_Store
 
-# Local tool caches
-.impeccable/
+# Local tool caches and per-developer overrides.
+# .impeccable/config.json is intentionally tracked: it holds the shared,
+# reviewable detector ignores.
+.impeccable/*
+!.impeccable/config.json

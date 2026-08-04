@@ -30,6 +30,21 @@ behalf.
 
 > "commit and push", "wrap this up and push it"
 
+### `generate-commit-message`
+The strict one. Produces exactly one Conventional Commits v1.0.0 message that passes
+`@commitlint/config-conventional`, derived only from the diff — never from chat
+history. Enforces subject length, type enum, body line width, footer trailers, and
+adds an attribution footer. Prints to the terminal by default and only commits when
+you explicitly ask; it never stages, pushes, or amends. Identity for the attribution
+footer comes from your own `git config`.
+
+> "generate a commit message", "/commit"
+
+**Three commit skills?** `commit` is the quick draft, `commit-and-push` runs the
+whole format → build → commit → push workflow, and this one is the strict
+commitlint-compliant generator for repos that enforce it. Install whichever you
+actually want; they don't conflict.
+
 ### `code-reviewer`
 Reviews the current diff for correctness, security, resource handling,
 maintainability, and test coverage. Findings are grouped by severity with a
