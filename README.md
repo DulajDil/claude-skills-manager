@@ -67,7 +67,6 @@ Three commit skills look redundant but aren't: `commit` is the quick one, `commi
 - [About](#about)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
-- [Architecture](#architecture)
 - [Development](#development)
 - [Configuration](#configuration)
 - [How skills work](#how-skills-work)
@@ -111,39 +110,6 @@ It's a local tool. It runs on your machine, writes to your skills directory, and
 **Frontend** — React 18, Vite, TypeScript, Tailwind CSS, shadcn/ui, React Router, Sonner
 **Backend** — Node.js 20+, Express 4, TypeScript, fs-extra, gray-matter
 **Packaging** — Docker (multi-stage), Railway config included
-
----
-
-## Architecture
-
-One Express API serves both the REST endpoints and the built React app. Skills are plain files on disk — there is no database.
-
-```mermaid
-flowchart LR
-    Browser["Browser<br/>React + Vite"]
-    API["Express API<br/>:3002"]
-    Skills[("SKILLS_DIR<br/>~/.claude-shared/skills")]
-    Bundled[("bundled-skills/<br/>in this repo")]
-    Upstream["GitHub<br/>upstream repos"]
-    SkillsMP["skillsmp.com"]
-    Claude["Claude Code<br/>reads on start"]
-
-    Browser -->|"REST"| API
-    API -->|"read / write / delete"| Skills
-    Bundled -->|"copy (offline)"| API
-    Upstream -->|"fetch tarball"| API
-    SkillsMP -->|"search + download"| API
-    Skills -.->|"discovered"| Claude
-```
-
-The Starter Set has two install paths:
-
-| Path | Used for | Needs network |
-|------|----------|---------------|
-| **Vendored** | The nine skills stored in `bundled-skills/` | No |
-| **External** | Skills declared with a `source` in `manifest.json` — fetched from GitHub at install time | Yes |
-
-External entries exist so large, actively-maintained skills don't have to be copied in and go stale. Only repos named in `bundled-skills/manifest.json` are ever fetched — the browser sends a skill id, never a URL.
 
 ---
 
@@ -298,6 +264,8 @@ Ids must match `^[a-z0-9][a-z0-9-]*$`; anything else returns `400`.
 | `POST` | `/api/bundled/install` | Install one (`{ id }`) or all (`{ all: true }`); `{ overwrite: true }` replaces |
 
 `install` returns `{ installed, skipped }`. Check `skipped` for entries that already existed or whose upstream download failed.
+
+Skills declared with a `source` in `manifest.json` are fetched from GitHub at install time instead of being copied from `bundled-skills/`. Only repos named in that manifest are ever fetched — the browser sends a skill id, never a URL.
 
 ### Marketplace
 
