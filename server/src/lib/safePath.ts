@@ -33,8 +33,25 @@ export function toSafeId(name: string): string | null {
  */
 export function resolveWithin(baseDir: string, id: unknown): string | null {
   if (!isValidId(id)) return null;
+  return containedJoin(baseDir, id);
+}
+
+/**
+ * Like resolveWithin but for multi-segment relative paths such as
+ * `.claude/skills/ui-ux-pro-max`. Used for subpaths that come from the repo's
+ * own manifest rather than from a request, so nested segments are allowed —
+ * but absolute paths and anything that climbs out of baseDir are still refused.
+ */
+export function resolveSubpathWithin(baseDir: string, relPath: unknown): string | null {
+  if (typeof relPath !== 'string' || relPath.length === 0 || relPath.length > 255) return null;
+  if (path.isAbsolute(relPath)) return null;
+  if (relPath.split(/[/\\]/).some((seg) => seg === '..')) return null;
+  return containedJoin(baseDir, relPath);
+}
+
+function containedJoin(baseDir: string, relPath: string): string | null {
   const base = path.resolve(baseDir);
-  const target = path.resolve(base, id);
+  const target = path.resolve(base, relPath);
   if (target !== base && !target.startsWith(base + path.sep)) return null;
   return target;
 }

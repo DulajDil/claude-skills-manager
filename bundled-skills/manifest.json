@@ -1,7 +1,7 @@
 {
   "name": "Hitman's Skill Set",
   "author": "Hitman (DulajDil)",
-  "description": "A small, opinionated set of everyday Claude Code skills — commit hygiene, debugging discipline, code explanation, PR writing, and test generation.",
+  "description": "A small, opinionated set of everyday Claude Code skills — commit hygiene, debugging discipline, code review, simplification, and test generation.",
   "skills": [
     {
       "id": "commit",
@@ -10,6 +10,14 @@
     {
       "id": "commit-and-push",
       "tagline": "Format, build-check, commit, then push — with approval gates."
+    },
+    {
+      "id": "code-reviewer",
+      "tagline": "Review a diff for correctness, security, and maintainability, ranked by severity."
+    },
+    {
+      "id": "code-simplifier",
+      "tagline": "Clean up recently changed code for clarity — without changing behaviour."
     },
     {
       "id": "debug",
@@ -26,6 +34,20 @@
     {
       "id": "test",
       "tagline": "Thorough unit tests that follow the project's existing framework."
+    },
+    {
+      "id": "ui-ux-pro-max",
+      "tagline": "Design intelligence: UI styles, colour palettes, font pairings, and UX guidelines.",
+      "source": {
+        "type": "github",
+        "repo": "nextlevelbuilder/ui-ux-pro-max-skill",
+        "ref": "main",
+        "path": ".claude/skills/ui-ux-pro-max",
+        "author": "NextLevelBuilder",
+        "license": "MIT",
+        "homepage": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+        "note": "Fetched from upstream on install rather than vendored — it carries a large local database and is actively maintained by its author, so you always get the current version."
+      }
     }
   ]
 }

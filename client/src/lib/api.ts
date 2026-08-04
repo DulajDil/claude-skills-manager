@@ -16,6 +16,17 @@ export interface SkillInput {
   version?: string;
 }
 
+export interface ExternalSource {
+  type: 'github';
+  repo: string;
+  ref?: string;
+  path?: string;
+  author?: string;
+  license?: string;
+  homepage?: string;
+  note?: string;
+}
+
 export interface BundledSkill {
   id: string;
   name: string;
@@ -24,6 +35,8 @@ export interface BundledSkill {
   version?: string;
   content: string;
   installed: boolean;
+  external: boolean;
+  source?: ExternalSource;
 }
 
 export interface BundledSet {

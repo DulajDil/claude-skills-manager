@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Download, Loader2, CheckCircle2, Package, RefreshCw } from 'lucide-react'
+import { Download, Loader2, CheckCircle2, Package, RefreshCw, Github, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 import { Header } from '@/components/Header'
 import { LogoMark } from '@/components/Logo'
@@ -47,7 +47,7 @@ export function StarterPage() {
     setBusy(id)
     try {
       await bundledApi.install({ id, overwrite })
-      toast.success(`"${id}" installed — restart Claude Code to pick it up`)
+      toast.success(`"${id}" installed — restart Claude Code to pick it up`, { duration: 5000 })
       await load()
     } catch (err) {
       const msg = String(err)
@@ -67,15 +67,22 @@ export function StarterPage() {
     setBusy('__all__')
     try {
       const res = await bundledApi.install({ all: true })
-      const skippedExisting = res.skipped.filter((s) => s.reason === 'already exists')
-      if (res.installed.length === 0) {
-        toast.info('Everything in this set is already installed')
-      } else {
+      const existing = res.skipped.filter((s) => s.reason === 'already exists')
+      const failed = res.skipped.filter((s) => s.reason !== 'already exists')
+
+      if (res.installed.length > 0) {
         // Say plainly what was left alone rather than implying a full install.
         toast.success(
           `Installed ${res.installed.length} skill${res.installed.length === 1 ? '' : 's'}` +
-            (skippedExisting.length ? ` — skipped ${skippedExisting.length} already present` : '')
+            (existing.length ? ` — skipped ${existing.length} already present` : '')
         )
+      } else if (failed.length === 0) {
+        toast.info('Everything in this set is already installed')
+      }
+
+      // Never let a failed download hide behind an overall success message.
+      for (const f of failed) {
+        toast.error(`${f.id} failed: ${f.reason}`, { duration: 8000 })
       }
       await load()
     } catch (err) {
@@ -162,11 +169,41 @@ export function StarterPage() {
                 </p>
               </CardHeader>
 
-              <CardContent className="pb-2">
-                {skill.version && (
-                  <Badge variant="outline" className="text-xs">
-                    v{skill.version}
-                  </Badge>
+              <CardContent className="space-y-2 pb-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  {skill.version && (
+                    <Badge variant="outline" className="text-xs">
+                      v{skill.version}
+                    </Badge>
+                  )}
+                  {skill.external && (
+                    <Badge variant="outline" className="gap-1 text-xs">
+                      <Github className="h-3 w-3" />
+                      Fetched from upstream
+                    </Badge>
+                  )}
+                  {skill.source?.license && (
+                    <Badge variant="outline" className="text-xs">
+                      {skill.source.license}
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Third-party skills are someone else's work and need the network
+                    to install — say so before the user clicks. */}
+                {skill.external && skill.source && (
+                  <p className="text-xs text-muted-foreground">
+                    By {skill.source.author ?? 'a third party'} ·{' '}
+                    <a
+                      href={skill.source.homepage ?? `https://github.com/${skill.source.repo}`}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="inline-flex items-center gap-0.5 underline underline-offset-2 hover:text-foreground"
+                    >
+                      {skill.source.repo}
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </p>
                 )}
               </CardContent>
 

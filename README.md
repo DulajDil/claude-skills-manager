@@ -33,8 +33,10 @@ Prefer to skip the UI entirely? Copy them by hand:
 
 ```bash
 cp -R bundled-skills/commit ~/.claude/skills/
-# ...or all of them at once, skipping the manifest:
-for d in bundled-skills/*/; do cp -R "$d" ~/.claude/skills/; done
+# ...or every offline one at once:
+for d in bundled-skills/*/; do
+  [ -f "$d/SKILL.md" ] && cp -R "$d" ~/.claude/skills/
+done
 ```
 
 ### What's in the set
@@ -43,12 +45,17 @@ for d in bundled-skills/*/; do cp -R "$d" ~/.claude/skills/; done
 |-------|--------------|
 | `commit` | Conventional commit message read off the staged diff |
 | `commit-and-push` | Format, build-check, commit, then push — with approval gates |
+| `code-reviewer` | Review a diff for correctness, security, and maintainability, ranked by severity |
+| `code-simplifier` | Clean up recently changed code for clarity — without changing behaviour |
 | `debug` | Reproduce, locate, hypothesise, verify, fix — no guessing |
 | `explain` | Explain code: what, how, why, and the gotchas |
 | `pr-description` | Draft a PR title, summary, and test plan from branch commits |
 | `test` | Thorough unit tests following the project's existing framework |
+| `ui-ux-pro-max` † | Design intelligence: UI styles, colour palettes, font pairings, UX guidelines |
 
-To add your own to the set: drop a folder containing `SKILL.md` into `bundled-skills/`, add its id to `bundled-skills/manifest.json`, and it appears on the Starter Set page.
+† Fetched from [its upstream repo](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) (MIT, by NextLevelBuilder) when you install it, rather than copied into this repo — so you always get the current version. Needs a network connection; the other eight work offline.
+
+**See [`bundled-skills/README.md`](bundled-skills/README.md)** for what each skill does in practice, how to trigger it, and how to add your own to the set.
 
 ---
 
@@ -224,6 +231,7 @@ SKILLSMP_API_KEY=sk_live_your_key_here
 ```
 claude-skills-manager/
 ├── bundled-skills/          # Hitman's Skill Set — ships with the repo
+│   ├── README.md            # what each skill does + how to add your own
 │   ├── manifest.json        # which skills appear on the Starter Set page
 │   └── <skill-name>/SKILL.md
 ├── server/                  # Express API (TypeScript)
@@ -279,6 +287,8 @@ Skill ids must match `^[a-z0-9][a-z0-9-]*$`; anything else returns `400`.
 | GET | `/api/bundled` | List bundled skills and whether each is installed |
 | POST | `/api/bundled/install` | Install one (`{ id }`) or all (`{ all: true }`); `{ overwrite: true }` replaces |
 
+`install` returns `{ installed, skipped }` — check `skipped` for entries that already existed or whose upstream download failed. Only repos named in `bundled-skills/manifest.json` are ever fetched.
+
 ### Marketplace
 
 | Method | Path | Description |
@@ -290,4 +300,6 @@ Skill ids must match `^[a-z0-9][a-z0-9-]*$`; anything else returns `400`.
 
 ## License
 
-MIT — see [LICENSE](LICENSE). The bundled skills are MIT too; use and adapt them freely.
+MIT — see [LICENSE](LICENSE). The skills authored in this repo are MIT too; use and adapt them freely.
+
+`ui-ux-pro-max` is MIT © [NextLevelBuilder](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) and is fetched from its own repository on install, so its licence travels with it.
