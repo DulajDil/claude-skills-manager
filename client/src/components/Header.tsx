@@ -1,4 +1,4 @@
-import { Globe, FolderOpen, BarChart2, Bot, Package } from 'lucide-react'
+import { FolderOpen, BarChart2, Bot, Package, Workflow } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { Logo } from './Logo'
 import { ThemeToggle } from './ThemeToggle'
@@ -45,8 +45,8 @@ export function Header({ onNewSkill }: HeaderProps) {
             {navLink('/', 'My Skills')}
             {navLink('/starter', 'Starter Set', <Package className="h-3.5 w-3.5" />)}
             {navLink('/agents', 'Agents', <Bot className="h-3.5 w-3.5" />, (p) => p === '/agents' || p.startsWith('/agents/'))}
+            {navLink('/workflows', 'Workflows', <Workflow className="h-3.5 w-3.5" />)}
             {navLink('/usage', 'Usage', <BarChart2 className="h-3.5 w-3.5" />)}
-            {navLink('/marketplace', 'Marketplace', <Globe className="h-3.5 w-3.5" />)}
           </nav>
         </div>
 

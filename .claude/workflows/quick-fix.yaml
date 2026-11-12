@@ -1,0 +1,32 @@
+name: quick-fix
+description: A small, obvious change — no design step. Fix, one review, checks, PR text, then your go-ahead to publish.
+steps:
+  - id: fix
+    type: agent
+    agent: implementer
+    instructions: This is a quick fix with no separate plan; the Task is the plan. Keep the change minimal and commit it on the run branch. If it turns out not to be small, stop and say so.
+  - id: review
+    type: agent
+    agent: reviewer
+    inputs: []
+    loopTo: fix
+    maxLoops: 2
+  - id: verify
+    type: agent
+    agent: verifier
+    inputs: []
+    loopTo: fix
+    maxLoops: 2
+  - id: pr
+    type: agent
+    agent: pr-writer
+    inputs: [verify]
+  - id: approve-publish
+    type: approve
+    message: Read the PR text. Approving pushes the branch and opens the PR.
+  - id: publish
+    type: agent
+    agent: implementer
+    publish: true
+    inputs: [pr]
+    instructions: Push the run branch to origin and open the PR with the pr step's TITLE and body. Nothing else.

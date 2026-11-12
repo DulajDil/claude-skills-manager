@@ -17,3 +17,6 @@ dist/
 # reviewable detector ignores.
 .impeccable/*
 !.impeccable/config.json
+
+# Agent workflow console: run state and step outputs (local only)
+.workflow-runs/

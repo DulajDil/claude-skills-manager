@@ -10,6 +10,7 @@ import { UsagePage } from '@/pages/UsagePage'
 import { AgentsPage } from '@/pages/AgentsPage'
 import { AgentFormPage } from '@/pages/AgentFormPage'
 import { AgentFlowPage } from '@/pages/AgentFlowPage'
+import { WorkflowsPage } from '@/pages/WorkflowsPage'
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="/agents/new" element={<AgentFormPage />} />
           <Route path="/agents/:id" element={<AgentFlowPage />} />
           <Route path="/agents/:id/edit" element={<AgentFormPage />} />
+          <Route path="/workflows" element={<WorkflowsPage />} />
         </Routes>
       </BrowserRouter>
       <Toaster richColors position="bottom-right" />

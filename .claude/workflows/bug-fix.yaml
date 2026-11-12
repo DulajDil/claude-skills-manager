@@ -1,0 +1,51 @@
+name: bug-fix
+description: Reproduce and diagnose a bug, approve the fix plan, fix it with a regression test, review, verify, and open the PR.
+steps:
+  - id: research
+    type: agent
+    agent: reference-researcher
+    when: references
+    permissions: read-only
+    instructions: Focus on how the references handle the failing behaviour (e.g. how an upstream library fixed the same bug).
+  - id: diagnose
+    type: agent
+    agent: bug-diagnoser
+    permissions: read-only
+    inputs: [research]
+  - id: approve
+    type: approve
+    message: Is the root cause right, and is the fix minimal?
+  - id: fix
+    type: agent
+    agent: implementer
+  - id: review
+    type: parallel
+    agent: reviewer
+    count: 2
+    focuses: [correctness, tests]
+    instructions: Confirm the regression test (or reproduction check) fails without the fix and passes with it.
+    loopTo: fix
+    maxLoops: 3
+  - id: security
+    type: agent
+    agent: security-reviewer
+    loopTo: fix
+    maxLoops: 2
+  - id: verify
+    type: agent
+    agent: verifier
+    loopTo: fix
+    maxLoops: 2
+  - id: pr
+    type: agent
+    agent: pr-writer
+    inputs: [diagnose, verify]
+  - id: approve-publish
+    type: approve
+    message: Approving pushes the branch and opens the PR.
+  - id: publish
+    type: agent
+    agent: implementer
+    publish: true
+    inputs: [pr]
+    instructions: Push the run branch to origin and open the PR with the pr step's TITLE and body. Nothing else.

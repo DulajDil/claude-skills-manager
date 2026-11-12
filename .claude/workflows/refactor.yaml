@@ -1,0 +1,50 @@
+name: refactor
+description: Restructure code without changing behaviour — plan, approve, refactor in small green steps, simplify, review, verify, PR.
+steps:
+  - id: research
+    type: agent
+    agent: reference-researcher
+    when: references
+    permissions: read-only
+  - id: plan
+    type: agent
+    agent: feature-designer
+    permissions: read-only
+    inputs: [research]
+    instructions: This is a refactor. Behaviour must not change. Each build-plan step must leave the checks green on its own; say how behaviour preservation is checked at each step.
+  - id: approve
+    type: approve
+    message: Approve the refactor plan.
+  - id: implement
+    type: agent
+    agent: implementer
+    instructions: Behaviour must not change. Commit after each plan step with the checks passing.
+  - id: simplify
+    type: agent
+    agent: simplifier
+  - id: review
+    type: parallel
+    agent: reviewer
+    count: 2
+    focuses: [behaviour-preservation, readability]
+    instructions: Any behaviour change (outputs, errors, status codes, public types) is blocking.
+    loopTo: implement
+    maxLoops: 3
+  - id: verify
+    type: agent
+    agent: verifier
+    loopTo: implement
+    maxLoops: 2
+  - id: pr
+    type: agent
+    agent: pr-writer
+    inputs: [plan, verify]
+  - id: approve-publish
+    type: approve
+    message: Approving pushes the branch and opens the PR.
+  - id: publish
+    type: agent
+    agent: implementer
+    publish: true
+    inputs: [pr]
+    instructions: Push the run branch to origin and open the PR with the pr step's TITLE and body. Nothing else.

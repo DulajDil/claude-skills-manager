@@ -1,0 +1,17 @@
+# Used by tools/workflow-console: GitHub repos to study as references, and notes every agent gets about this repo.
+references: []
+notes: |
+  Claude Skills Manager: a local web UI for managing Claude Code skills and agents.
+  - server/: Express 4 + TypeScript API (routes in server/src/routes). Every request-supplied
+    id must go through isValidId/resolveWithin in server/src/lib/safePath.ts (validate, don't sanitise).
+  - client/: React 18 + Vite + Tailwind + shadcn/ui (pages in client/src/pages, ui in client/src/components/ui).
+  - bundled-skills/: the shareable starter skill set (manifest.json lists them).
+  - tools/workflow-console/: this agent workflow console (own package: server/, web/, shared/).
+  Checks: `npm run build` at the root type-checks and builds client and server
+  (install with `npm run install:all` in a fresh worktree). tools/workflow-console has
+  `npm run typecheck`. There is no linter and no test runner yet.
+  Threat model: the Skills Manager API has no authentication and is reachable on the LAN, and it reads,
+  writes and deletes files in the skills/agents directories, runs `exec` for `open`, and fetches
+  from GitHub. A request that can choose a path, a command or a URL is serious. The workflow
+  console binds to 127.0.0.1 only because it starts agents that edit code.
+  Commits follow Conventional Commits.
