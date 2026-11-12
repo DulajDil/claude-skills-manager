@@ -5,20 +5,23 @@ steps:
   - id: commit
     type: agent
     agent: committer
-    skills: [generate-commit-message]
+    skills:
+      - generate-commit-message
   - id: pr
     type: agent
     agent: pr-writer
-    inputs: [commit]
-    instructions: The base branch for this PR is the "PR base branch" in the run context; use it in place of main in your git commands.
+    inputs:
+      - commit
+    instructions: The base branch for this PR is the "PR base branch" in the run context; use it in place of main in your git commands. when writing the pr. Do not add the generated with claude code in the pr description. If the repo have a pr description template. Use the template to adhere and create the pr.
   - id: approve-publish
     type: approve
     message: Preview the PR below. Approve to push the branch and open it on GitHub, or reject with feedback to rewrite the description.
   - id: publish
     type: agent
     agent: implementer
+    inputs:
+      - pr
     publish: true
-    inputs: [pr]
     instructions: |
       Push the current branch and open the PR, nothing else:
       1. `git push -u origin <current branch>`
