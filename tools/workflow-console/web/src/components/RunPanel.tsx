@@ -2,6 +2,8 @@ import { Check, ExternalLink, FileText, GitBranch, GitPullRequest, Loader2, Play
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { api, type LogEntry, type RepoInfo, type RunState, type SkillInfo } from '../api';
 import { SkillTextarea } from './SkillTextarea';
+import { ModelSelect } from './ModelSelect';
+import { modelLabel } from '../../../shared/schema';
 import { OutputPreview } from './OutputPreview';
 import { RepoSelect } from './RepoPicker';
 
@@ -62,6 +64,7 @@ export function RunPanel({ repo, repos, onSelectRepo, onReposChanged, workflow, 
   useEffect(() => setDryRun(!inPlace), [workflow, inPlace]);
   const [references, setReferences] = useState('');
   const [skills, setSkills] = useState<SkillInfo[]>([]);
+  const [model, setModel] = useState<string>();
   useEffect(() => {
     api.skills(repo?.id).then(setSkills).catch(() => setSkills([]));
   }, [repo?.id]);
@@ -91,6 +94,7 @@ export function RunPanel({ repo, repos, onSelectRepo, onReposChanged, workflow, 
         task,
         dryRun,
         references: references.split(/[\s,]+/).map((r) => r.trim()).filter(Boolean),
+        model,
       });
       setTask('');
       onSelectRun(created.id);
@@ -132,6 +136,16 @@ export function RunPanel({ repo, repos, onSelectRepo, onReposChanged, workflow, 
           <button className="btn-primary" disabled={busy || (!task.trim() && !inPlace) || !repo} onClick={start}>
             {busy ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />} Run
           </button>
+          <label className="inline-flex items-center gap-1.5 text-[13px] text-ink-soft">
+            Model
+            <ModelSelect
+              value={model}
+              onChange={setModel}
+              emptyLabel="each step's own"
+              className="select w-44 py-1 text-[12.5px]"
+              title="Use one model for every agent step of this run (overrides step and agent models)"
+            />
+          </label>
           <label className="inline-flex items-center gap-1.5 text-[13px] text-ink-soft" title="Publish steps are skipped: nothing is pushed and no PR is opened.">
             <input type="checkbox" checked={dryRun} onChange={(e) => setDryRun(e.target.checked)} /> Dry run (skip publish)
           </label>
@@ -215,6 +229,7 @@ function RunDetail({
           <span className="text-[12px] text-ink-faint">read-only, no worktree</span>
         )}
         <span className="font-mono text-[12px] text-ink-soft">${run.totalCostUsd.toFixed(3)}</span>
+        {run.model && <span className="chip border-line bg-paper text-ink-soft">all steps: {modelLabel(run.model)}</span>}
         {run.prUrl && (
           <a className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[12.5px] font-medium text-emerald-800 hover:underline" href={run.prUrl} target="_blank" rel="noreferrer">
             <GitPullRequest size={13} /> {run.prUrl.replace('https://github.com/', '')} <ExternalLink size={11} />

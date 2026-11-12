@@ -23,6 +23,8 @@ async function call<T>(url: string, init?: RequestInit & { json?: unknown }): Pr
 
 export const api = {
   agents: (repo?: string) => call<{ agents: AgentInfo[]; commonTools: string[] }>(`/api/agents${repo ? `?repo=${encodeURIComponent(repo)}` : ''}`),
+  setAgentModel: (name: string, model: string | null, repo?: string) =>
+    call<{ name: string; model: string | null }>(`/api/agents/${name}/model${repo ? `?repo=${encodeURIComponent(repo)}` : ''}`, { method: 'PUT', json: { model } }),
   repos: () => call<RepoInfo[]>('/api/repos'),
   skills: (repo?: string) => call<SkillInfo[]>(`/api/skills${repo ? `?repo=${encodeURIComponent(repo)}` : ''}`),
   discoverRepos: () => call<string[]>('/api/repos/discover'),
@@ -34,7 +36,7 @@ export const api = {
   saveWorkflow: (name: string, yaml: string) => call<WorkflowFile>(`/api/workflows/${name}`, { method: 'PUT', json: { yaml } }),
   deleteWorkflow: (name: string) => call<void>(`/api/workflows/${name}`, { method: 'DELETE' }),
   runs: (workflow: string, repo: string) => call<RunState[]>(`/api/runs?workflow=${encodeURIComponent(workflow)}&repo=${encodeURIComponent(repo)}`),
-  startRun: (body: { workflow: string; repo: string; task: string; dryRun: boolean; references: string[] }) => call<RunState>('/api/runs', { method: 'POST', json: body }),
+  startRun: (body: { workflow: string; repo: string; task: string; dryRun: boolean; references: string[]; model?: string }) => call<RunState>('/api/runs', { method: 'POST', json: body }),
   approve: (id: string) => call<RunState>(`/api/runs/${id}/approve`, { method: 'POST', json: {} }),
   reject: (id: string, feedback: string) => call<RunState>(`/api/runs/${id}/reject`, { method: 'POST', json: { feedback } }),
   stop: (id: string) => call<RunState>(`/api/runs/${id}/stop`, { method: 'POST', json: {} }),
@@ -49,7 +51,7 @@ export type { AgentInfo, LogEntry, RepoInfo, RunState, SkillInfo, Step, Workflow
 
 // ---------------------------------------------------------------- YAML <-> workflow
 
-const STEP_KEY_ORDER = ['id', 'type', 'agent', 'count', 'focuses', 'when', 'skills', 'permissions', 'inputs', 'loopTo', 'maxLoops', 'publish', 'message', 'instructions'];
+const STEP_KEY_ORDER = ['id', 'type', 'agent', 'model', 'count', 'focuses', 'when', 'skills', 'permissions', 'inputs', 'loopTo', 'maxLoops', 'publish', 'message', 'instructions'];
 
 /** Stable, readable YAML: fixed key order, empty values dropped. */
 export function toYaml(wf: Workflow): string {

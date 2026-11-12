@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowUp, Bot, UserCheck, Users, X } from 'lucide-react';
 import type { AgentInfo, Step } from '../../../shared/schema';
-import { PERMISSIONS, defaultInputs } from '../../../shared/schema';
+import { PERMISSIONS, defaultInputs, modelLabel } from '../../../shared/schema';
+import { ModelSelect } from './ModelSelect';
 
 interface Props {
   step: Step;
@@ -10,6 +11,7 @@ interface Props {
   commonTools: string[];
   readOnlyWorkflow: boolean;
   planId?: string;
+  onSetAgentModel: (agent: string, model: string | undefined) => void;
   onChange: (next: Step) => void;
   onMove: (dir: -1 | 1) => void;
   onDelete: () => void;
@@ -21,7 +23,7 @@ const TYPE_LABEL: Record<Step['type'], string> = {
   approve: 'you approve before the run goes on',
 };
 
-export function AgentChips({ agent, commonTools }: { agent: AgentInfo; commonTools: string[] }) {
+export function AgentChips({ agent, commonTools, onSetModel }: { agent: AgentInfo; commonTools: string[]; onSetModel?: (model: string | undefined) => void }) {
   const extraTools = agent.tools?.filter((t) => !t.startsWith('mcp__') && !commonTools.includes(t)) ?? [];
   return (
     <div className="flex flex-wrap gap-1.5">
@@ -36,13 +38,20 @@ export function AgentChips({ agent, commonTools }: { agent: AgentInfo; commonToo
         <span key={s} className="chip border-violet-200 bg-violet-50 text-violet-700">skill: {s}</span>
       ))}
       {agent.readOnly && <span className="chip border-line bg-paper-sunk text-ink-soft">read-only</span>}
-      {agent.model && <span className="chip border-line bg-paper-raised text-ink-faint">model: {agent.model}</span>}
+      {onSetModel ? (
+        <span className="chip gap-1 border-line bg-paper-raised pr-0 text-ink-faint" title={`Default model for ${agent.name}: changes .claude/agents/${agent.name}.md, so every workflow using it`}>
+          default model:
+          <ModelSelect value={agent.model} onChange={onSetModel} emptyLabel="Claude Code default" className="cursor-pointer appearance-none bg-transparent pr-1 font-mono text-[12px] text-ink-soft outline-none hover:text-ink" title={`Default model for ${agent.name}`} />
+        </span>
+      ) : (
+        agent.model && <span className="chip border-line bg-paper-raised text-ink-faint">model: {modelLabel(agent.model)}</span>
+      )}
       {agent.source === 'repo' && <span className="chip border-emerald-200 bg-emerald-50 text-emerald-800">repo override</span>}
     </div>
   );
 }
 
-export function StepCard({ step, index, steps, agents, commonTools, readOnlyWorkflow, planId, onChange, onMove, onDelete }: Props) {
+export function StepCard({ step, index, steps, agents, commonTools, readOnlyWorkflow, planId, onSetAgentModel, onChange, onMove, onDelete }: Props) {
   const Icon = step.type === 'approve' ? UserCheck : step.type === 'parallel' ? Users : Bot;
   const earlier = steps.slice(0, index);
   const set = (patch: Partial<Step>) => onChange({ ...step, ...patch } as Step);
@@ -84,13 +93,14 @@ export function StepCard({ step, index, steps, agents, commonTools, readOnlyWork
           <input className="field w-full" placeholder="What should you check before approving?" value={step.message ?? ''} onChange={(e) => set({ message: e.target.value })} />
         </div>
       ) : (
-        <AgentFields step={step} steps={steps} planId={planId} earlier={earlier} agents={agents} commonTools={commonTools} readOnlyWorkflow={readOnlyWorkflow} set={set} />
+        <AgentFields onSetAgentModel={onSetAgentModel} step={step} steps={steps} planId={planId} earlier={earlier} agents={agents} commonTools={commonTools} readOnlyWorkflow={readOnlyWorkflow} set={set} />
       )}
     </div>
   );
 }
 
 function AgentFields({
+  onSetAgentModel,
   step,
   steps,
   planId,
@@ -100,6 +110,7 @@ function AgentFields({
   readOnlyWorkflow,
   set,
 }: {
+  onSetAgentModel: (agent: string, model: string | undefined) => void;
   step: Exclude<Step, { type: 'approve' }>;
   steps: Step[];
   planId?: string;
@@ -141,7 +152,7 @@ function AgentFields({
       {agent ? (
         <>
           <p className="text-[13px] leading-relaxed text-ink-soft">{agent.description}</p>
-          <AgentChips agent={agent} commonTools={commonTools} />
+          <AgentChips agent={agent} commonTools={commonTools} onSetModel={(m) => onSetAgentModel(agent.name, m)} />
         </>
       ) : (
         <p className="text-[13px] text-red-600">No agent named “{step.agent}” in .claude/agents.</p>
@@ -154,6 +165,13 @@ function AgentFields({
             <option key={p} value={p}>{p}</option>
           ))}
         </select>
+        <label className="ml-2 text-[13px] text-ink-soft">Model</label>
+        <ModelSelect
+          value={step.model}
+          onChange={(model) => set({ model })}
+          emptyLabel={`agent default (${modelLabel(agent?.model)})`}
+          title="Model for this step only; overrides the agent's default"
+        />
         <label className="ml-2 text-[13px] text-ink-soft">Loop to</label>
         <select className="select w-36" value={step.loopTo ?? ''} onChange={(e) => set({ loopTo: e.target.value || undefined, maxLoops: e.target.value ? step.maxLoops ?? 2 : undefined })}>
           <option value="">none</option>

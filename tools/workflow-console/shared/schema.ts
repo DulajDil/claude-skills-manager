@@ -10,6 +10,16 @@ export const GITHUB_REPO = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
 const slug = z.string().min(1).max(64).regex(SLUG, 'lowercase letters, digits and dashes only');
 
 export const PERMISSIONS = ['auto', 'ask', 'read-only'] as const;
+
+/** Model choices offered in the UI. Aliases resolve to the latest model of that tier; full ids work too (in YAML). */
+export const MODEL_OPTIONS = [
+  { value: 'opus', label: 'Opus 5.5' },
+  { value: 'sonnet', label: 'Sonnet 5.5' },
+  { value: 'haiku', label: 'Haiku 5.5' },
+  { value: 'claude-fable-5-2', label: 'Fable 5.2' },
+] as const;
+export const MODEL_ID = /^[A-Za-z0-9][A-Za-z0-9.\-\[\]]{0,99}$/;
+export const modelLabel = (m?: string) => MODEL_OPTIONS.find((o) => o.value === m)?.label ?? m ?? 'default';
 export type Permission = (typeof PERMISSIONS)[number];
 
 const agentFields = {
@@ -24,6 +34,8 @@ const agentFields = {
   /** On a `changes_requested` verdict with blocking findings, jump back to this step with the findings. */
   loopTo: slug.optional(),
   maxLoops: z.number().int().min(1).max(10).optional(),
+  /** Model for this step, overriding the agent's default (opus, sonnet, haiku, or a full model id). */
+  model: z.string().regex(MODEL_ID, 'a model alias (opus, sonnet, haiku) or model id').optional(),
   /** Skills (by name) whose SKILL.md is given to the agent for this step, e.g. generate-commit-message. */
   skills: z.array(slug).optional(),
   /** `references`: only runs when the run has GitHub reference repos; skipped otherwise. */
@@ -247,6 +259,8 @@ export interface RunState {
   references: string[];
   /** Skills picked for the whole run with `/name` in the task; every agent step gets them. */
   skills?: string[];
+  /** One model for every agent step of this run, overriding step and agent models. */
+  model?: string;
   referenceCheckouts?: ReferenceCheckout[];
   /** The workflow as it was when the run started; edits don't affect running runs. */
   definition: Workflow;

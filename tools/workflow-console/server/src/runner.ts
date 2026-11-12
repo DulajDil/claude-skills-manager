@@ -148,7 +148,7 @@ export class RunManager extends EventEmitter {
 
   // ---------------------------------------------------------------- lifecycle
 
-  async start(definition: Workflow, task: string, dryRun: boolean, repo: RepoInfo, references: string[], skills: string[] = []): Promise<RunState> {
+  async start(definition: Workflow, task: string, dryRun: boolean, repo: RepoInfo, references: string[], skills: string[] = [], model?: string): Promise<RunState> {
     const agents = await loadAgents(repo.path);
     for (const step of definition.steps) {
       if (step.type !== 'approve' && !agents.has(step.agent)) throw Object.assign(new Error(`Unknown agent "${step.agent}" in step "${step.id}"`), { status: 400 });
@@ -178,6 +178,7 @@ export class RunManager extends EventEmitter {
       repoName: repo.name,
       references,
       skills,
+      model,
       definition,
       task,
       dryRun,
@@ -198,7 +199,7 @@ export class RunManager extends EventEmitter {
     this.runs.set(id, run);
     await fs.writeFile(path.join(this.runDir(id), 'task.md'), `# Task\n\n${task}\n`);
     await this.save(run);
-    this.log(run, { stepId: '-', attempt: 0, kind: 'system', text: `Repo ${repo.name} (${repo.path}) · ${worktree ? `worktree ${worktree.path} on branch ${worktree.branch} (from ${worktree.base})` : definition.inPlace ? `in place on ${await currentBranch(repo.path)} (your checkout, uncommitted changes included) · PR base ${base}` : 'read-only, no worktree'}${references.length ? ` · references: ${references.join(', ')}` : ''}${skills.length ? ` · skills: ${skills.map((k) => `/${k}`).join(', ')}` : ''}` });
+    this.log(run, { stepId: '-', attempt: 0, kind: 'system', text: `Repo ${repo.name} (${repo.path}) · ${worktree ? `worktree ${worktree.path} on branch ${worktree.branch} (from ${worktree.base})` : definition.inPlace ? `in place on ${await currentBranch(repo.path)} (your checkout, uncommitted changes included) · PR base ${base}` : 'read-only, no worktree'}${references.length ? ` · references: ${references.join(', ')}` : ''}${skills.length ? ` · skills: ${skills.map((k) => `/${k}`).join(', ')}` : ''}${model ? ` · model for every step: ${model}` : ''}` });
     void this.drive(run);
     return run;
   }
@@ -676,7 +677,8 @@ export class RunManager extends EventEmitter {
       systemPrompt: { type: 'preset', preset: 'claude_code', append: agent.prompt },
       tools: agent.tools ?? { type: 'preset', preset: 'claude_code' },
       disallowedTools: readOnly ? ['Edit', 'Write', 'NotebookEdit', 'MultiEdit'] : undefined,
-      model: agent.model,
+      // Run override → step → agent default.
+      model: run.model ?? step.model ?? agent.model,
       permissionMode: 'default',
       abortController: abort,
       env: { ...process.env, CLAUDE_AGENT_SDK_CLIENT_APP: 'workflow-console/0.1' },

@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import express, { type NextFunction, type Request, type Response } from 'express';
-import { SLUG, skillMentions } from '../../shared/schema.js';
-import { commonTools, loadAgents } from './agents.js';
+import { MODEL_ID, SLUG, skillMentions } from '../../shared/schema.js';
+import { commonTools, loadAgents, setAgentModel } from './agents.js';
 import { HOST, LIBRARY_ROOT, PORT } from './config.js';
 import { listSkills } from './skills.js';
 import { addRepo, discoverRepos, getRepo, listRepos, normaliseReference, referencesInText, removeRepo, saveSettings } from './repos.js';
@@ -40,7 +40,18 @@ const nameParam = (req: Request) => {
 app.get('/api/agents', h(async (req, res) => {
   const repo = req.query.repo ? await getRepo(String(req.query.repo)) : undefined;
   const all = [...(await loadAgents(repo?.path)).values()];
-  res.json({ agents: all.map(({ prompt: _prompt, ...info }) => info), commonTools: commonTools(all) });
+  res.json({ agents: all.map(({ prompt: _prompt, file: _file, ...info }) => info), commonTools: commonTools(all) });
+}));
+
+/** Change an agent's default model (writes its .md; the repo's override file if it has one). */
+app.put('/api/agents/:name/model', h(async (req, res) => {
+  const repo = req.query.repo ? await getRepo(String(req.query.repo)) : undefined;
+  const agent = (await loadAgents(repo?.path)).get(String(req.params.name));
+  if (!agent) return res.status(404).json({ error: 'Unknown agent' });
+  const model = req.body?.model ? String(req.body.model) : null;
+  if (model && !MODEL_ID.test(model)) return res.status(400).json({ error: 'Invalid model' });
+  await setAgentModel(agent, model);
+  res.json({ name: agent.name, model });
 }));
 
 app.get('/api/skills', h(async (req, res) => {
@@ -109,7 +120,9 @@ app.post('/api/runs', h(async (req, res) => {
   // Skills: every `/name` in the task that is a real skill for this repo.
   const known = new Set((await listSkills(repo.path)).map((k) => k.name));
   const skills = skillMentions(task).filter((k) => known.has(k));
-  res.status(201).json(await runs.start(wf.workflow, task, Boolean(req.body?.dryRun), repo, references, skills));
+  const model = req.body?.model ? String(req.body.model) : undefined;
+  if (model && !MODEL_ID.test(model)) return res.status(400).json({ error: 'Invalid model' });
+  res.status(201).json(await runs.start(wf.workflow, task, Boolean(req.body?.dryRun), repo, references, skills, model));
 }));
 
 const runOr404 = (req: Request) => {

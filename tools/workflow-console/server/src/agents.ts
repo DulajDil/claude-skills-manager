@@ -8,6 +8,8 @@ import { agentDirsFor } from './repos.js';
 export interface AgentDef extends AgentInfo {
   /** Markdown body: the agent's system prompt. */
   prompt: string;
+  /** The .md file it was loaded from (library or repo override). */
+  file: string;
 }
 
 const EDIT_TOOLS = ['Edit', 'Write', 'NotebookEdit', 'MultiEdit'];
@@ -18,7 +20,7 @@ function toList(value: unknown): string[] {
   return [];
 }
 
-export function parseAgent(name: string, raw: string, source: AgentDef['source'] = 'library'): AgentDef {
+export function parseAgent(name: string, raw: string, source: AgentDef['source'] = 'library', file = ''): AgentDef {
   const { data, content } = matter(raw);
   const tools = data.tools === undefined ? null : toList(data.tools);
   const mcp: Record<string, string[]> = {};
@@ -37,6 +39,7 @@ export function parseAgent(name: string, raw: string, source: AgentDef['source']
     readOnly: data.permissions === 'read-only' || (data.permissions === undefined && tools !== null && !tools.some((t) => EDIT_TOOLS.includes(t))),
     source,
     prompt: content.trim(),
+    file,
   };
 }
 
@@ -57,11 +60,25 @@ export async function loadAgents(repoPath?: string): Promise<Map<string, AgentDe
     for (const file of files.filter((f) => f.endsWith('.md')).sort()) {
       const name = file.slice(0, -3);
       if (!SLUG.test(name)) continue;
-      const agent = parseAgent(name, await fs.readFile(path.join(dir, file), 'utf8'), i === 0 ? 'library' : 'repo');
+      const full = path.join(dir, file);
+      const agent = parseAgent(name, await fs.readFile(full, 'utf8'), i === 0 ? 'library' : 'repo', full);
       agents.set(agent.name, agent);
     }
   }
   return agents;
+}
+
+/**
+ * Set (or clear) an agent's default model by editing just the `model:` line of
+ * its frontmatter, so the rest of the file keeps its formatting.
+ */
+export async function setAgentModel(agent: AgentDef, model: string | null): Promise<void> {
+  const raw = await fs.readFile(agent.file, 'utf8');
+  const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(raw);
+  if (!m) throw Object.assign(new Error(`${agent.name} has no frontmatter`), { status: 400 });
+  let front = m[1].replace(/^model:.*(\r?\n)?/m, '');
+  if (model) front = /^tools:.*$/m.test(front) ? front.replace(/^(tools:.*)$/m, `$1\nmodel: ${model}`) : `${front}\nmodel: ${model}`;
+  await fs.writeFile(agent.file, raw.replace(m[1], front.replace(/\n+$/, '')));
 }
 
 /** Tools every agent with an explicit tool list shares — the UI shows these once instead of on every card. */

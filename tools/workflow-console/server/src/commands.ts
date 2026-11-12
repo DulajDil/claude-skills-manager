@@ -64,6 +64,7 @@ function describeStep(step: Step, wf: Workflow): string {
   const inputs = step.inputs ?? defaultInputs(wf, step.id);
   const parts = [`${head}${perms ? ` (permissions: ${perms})` : ''}.`];
   if (step.when === 'references') parts.push('Only when there are reference repos; otherwise skip it.');
+  if (step.model) parts.push(`Run it with model \`${step.model}\`.`);
   if (step.skills?.length) parts.push(`It must use the ${step.skills.map((k) => `\`/${k}\``).join(', ')} skill${step.skills.length > 1 ? 's' : ''} for this step.`);
   if (inputs.length) parts.push(`Give it the output of: ${inputs.map((s) => `\`${s}\``).join(', ')}.`);
   if (step.loopTo) parts.push(`On blocking findings, loop back to \`${step.loopTo}\` (max ${step.maxLoops ?? 2} times).`);

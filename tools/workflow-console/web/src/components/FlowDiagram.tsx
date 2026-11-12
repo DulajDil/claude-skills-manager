@@ -1,5 +1,5 @@
 import { Bot, UserCheck, Users } from 'lucide-react';
-import type { RunState, Step, StepState } from '../../../shared/schema';
+import { modelLabel, type RunState, type Step, type StepState } from '../../../shared/schema';
 
 const W = 132;
 const H = 70;
@@ -18,10 +18,11 @@ const STATUS_STYLE: Record<string, { box: string; dot: string; label: string }> 
   skipped: { box: 'border-dashed border-line-strong bg-paper-sunk', dot: 'bg-ink-faint/40', label: 'skipped' },
 };
 
-function subtitle(step: Step): string {
+function subtitle(step: Step, runModel?: string): string {
   if (step.type === 'approve') return 'you approve';
-  if (step.type === 'parallel') return `${step.count} × ${step.agent}`;
-  return step.agent;
+  const model = runModel ?? step.model;
+  const who = step.type === 'parallel' ? `${step.count} × ${step.agent}` : step.agent;
+  return model ? `${who} · ${modelLabel(model).replace(/ \d.*$/, '')}` : who;
 }
 
 interface Props {
@@ -98,7 +99,7 @@ export function FlowDiagram({ steps, run, selected, onSelect }: Props) {
                 <Icon size={12} className="shrink-0 text-ink-soft" />
                 <span className="truncate">{step.id}</span>
               </span>
-              <span className="mt-0.5 truncate text-[11px] leading-4 text-ink-soft">{subtitle(step)}</span>
+              <span className="mt-0.5 truncate text-[11px] leading-4 text-ink-soft">{subtitle(step, run?.model)}</span>
               <span className="mt-auto flex items-center gap-1.5 text-[10.5px] leading-4 text-ink-faint">
                 <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${style.dot}`} />
                 <span className="truncate">

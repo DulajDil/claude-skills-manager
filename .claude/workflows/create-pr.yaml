@@ -12,7 +12,7 @@ steps:
     agent: pr-writer
     inputs:
       - commit
-    instructions: The base branch for this PR is the "PR base branch" in the run context; use it in place of main in your git commands. when writing the pr. Do not add the generated with claude code in the pr description. If the repo have a pr description template. Use the template to adhere and create the pr.
+    instructions: Create the PR against the "PR base branch" from the run context, and use that branch instead of main in all git commands. If the repo has a PR template, follow it and fill in every section. Write the description in plain, non-technical English that anyone can understand, focusing on what changed and why. Do not add "Generated with Claude Code" or any other AI attribution to the description.
   - id: approve-publish
     type: approve
     message: Preview the PR below. Approve to push the branch and open it on GitHub, or reject with feedback to rewrite the description.

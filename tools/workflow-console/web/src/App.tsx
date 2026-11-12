@@ -330,6 +330,16 @@ export default function App() {
                       commonTools={commonTools}
                       readOnlyWorkflow={Boolean(draft.readOnly)}
                       planId={draft.plan}
+                      onSetAgentModel={async (name, model) => {
+                        try {
+                          await api.setAgentModel(name, model ?? null, repoId);
+                          const a = await api.agents(repoId);
+                          setAgents(a.agents);
+                          flash('ok', `${name} now defaults to ${model ?? 'the Claude Code default model'} in every workflow`);
+                        } catch (e) {
+                          flash('err', (e as Error).message);
+                        }
+                      }}
                       onChange={(next) => changeStep(i, next)}
                       onMove={(dir) => moveStep(i, dir)}
                       onDelete={() => setSteps(draft.steps.filter((_, j) => j !== i))}
