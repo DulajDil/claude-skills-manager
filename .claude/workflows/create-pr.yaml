@@ -1,0 +1,28 @@
+name: create-pr
+description: Commit your current changes with a /generate-commit-message message on a feature branch, write the PR description, preview it, and on your approval push the branch and open the PR on GitHub.
+inPlace: true
+steps:
+  - id: commit
+    type: agent
+    agent: committer
+    skills: [generate-commit-message]
+  - id: pr
+    type: agent
+    agent: pr-writer
+    inputs: [commit]
+    instructions: The base branch for this PR is the "PR base branch" in the run context; use it in place of main in your git commands.
+  - id: approve-publish
+    type: approve
+    message: Preview the PR below. Approve to push the branch and open it on GitHub, or reject with feedback to rewrite the description.
+  - id: publish
+    type: agent
+    agent: implementer
+    publish: true
+    inputs: [pr]
+    instructions: |
+      Push the current branch and open the PR, nothing else:
+      1. `git push -u origin <current branch>`
+      2. Write the body (everything after the TITLE line) to a temp file under /tmp with a Bash heredoc (not the Write tool), then
+         `gh pr create --base <PR base branch> --head <current branch> --title "<TITLE>" --body-file <temp file>`.
+      3. Finish with the PR URL on its own line.
+      If a PR for this branch already exists, don't create another: push, then give its URL (`gh pr view --json url -q .url`).

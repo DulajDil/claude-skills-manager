@@ -1,0 +1,56 @@
+name: idea-to-feature
+description: Turn an idea into a production-ready feature — design, your approval, build test-first, simplify, parallel code and security reviews, checks, the PR text, then your go-ahead to publish.
+steps:
+  - id: research
+    type: agent
+    agent: reference-researcher
+    when: references
+    permissions: read-only
+  - id: design
+    type: agent
+    agent: feature-designer
+    permissions: read-only
+    inputs: [research]
+  - id: approve
+    type: approve
+    message: Approve the design before any code changes.
+  - id: implement
+    type: agent
+    agent: implementer
+    permissions: auto
+  - id: simplify
+    type: agent
+    agent: simplifier
+    permissions: auto
+  - id: review
+    type: parallel
+    agent: reviewer
+    count: 3
+    focuses: [correctness, tests, readability]
+    loopTo: implement
+    maxLoops: 3
+  - id: security
+    type: parallel
+    agent: security-reviewer
+    count: 2
+    focuses: [input-validation, secrets-and-privilege]
+    loopTo: implement
+    maxLoops: 2
+  - id: verify
+    type: agent
+    agent: verifier
+    loopTo: implement
+    maxLoops: 2
+  - id: pr
+    type: agent
+    agent: pr-writer
+    inputs: [design, verify]
+  - id: approve-publish
+    type: approve
+    message: Read the PR text. Approving pushes the branch and opens the PR.
+  - id: publish
+    type: agent
+    agent: implementer
+    publish: true
+    inputs: [pr]
+    instructions: Push the run branch to origin and open the PR with the pr step's TITLE and body (use `gh pr create --title ... --body-file ...`). Nothing else.

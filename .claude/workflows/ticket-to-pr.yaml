@@ -1,0 +1,52 @@
+name: ticket-to-pr
+description: Take a ticket (paste it, or its key and text) through design, approval, build, reviews and checks to an open PR.
+steps:
+  - id: research
+    type: agent
+    agent: reference-researcher
+    when: references
+    permissions: read-only
+  - id: plan
+    type: agent
+    agent: feature-designer
+    permissions: read-only
+    inputs: [research]
+    instructions: The task is a ticket. Start the design with an "Acceptance criteria" list extracted from it, and map every criterion to at least one build-plan step.
+  - id: approve
+    type: approve
+    message: Check the acceptance criteria and the plan.
+  - id: implement
+    type: agent
+    agent: implementer
+  - id: review
+    type: parallel
+    agent: reviewer
+    count: 2
+    focuses: [correctness, tests]
+    instructions: Also check that every acceptance criterion in the plan is met; an unmet criterion is blocking.
+    loopTo: implement
+    maxLoops: 3
+  - id: security
+    type: agent
+    agent: security-reviewer
+    loopTo: implement
+    maxLoops: 2
+  - id: verify
+    type: agent
+    agent: verifier
+    loopTo: implement
+    maxLoops: 2
+  - id: pr
+    type: agent
+    agent: pr-writer
+    inputs: [plan, verify]
+    instructions: Reference the ticket in the Summary and list the acceptance criteria as a checklist.
+  - id: approve-publish
+    type: approve
+    message: Approving pushes the branch and opens the PR.
+  - id: publish
+    type: agent
+    agent: implementer
+    publish: true
+    inputs: [pr]
+    instructions: Push the run branch to origin and open the PR with the pr step's TITLE and body. Nothing else.

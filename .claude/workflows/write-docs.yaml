@@ -1,0 +1,37 @@
+name: write-docs
+description: Write or update documentation — outline, approve, write it on a branch, check every claim against the code, PR.
+steps:
+  - id: outline
+    type: agent
+    agent: feature-designer
+    permissions: read-only
+    instructions: |
+      This is a documentation task, not a code change. Produce a doc outline instead of a design: audience, which files to
+      create or update, section headings with one line each on what goes there, and the code each section must be checked against.
+  - id: approve
+    type: approve
+    message: Approve the outline.
+  - id: write
+    type: agent
+    agent: implementer
+    instructions: Write the documentation from the approved outline. Change docs only (Markdown, comments if asked) — no code changes. Every command and path you mention must exist. Commit with a docs(...) message.
+  - id: review
+    type: agent
+    agent: reviewer
+    inputs: [outline]
+    instructions: Review the documentation diff for accuracy. Verify every command, path, option and behaviour claim against the code; a wrong claim is blocking. Also flag gaps against the outline.
+    loopTo: write
+    maxLoops: 3
+  - id: pr
+    type: agent
+    agent: pr-writer
+    inputs: [outline]
+  - id: approve-publish
+    type: approve
+    message: Approving pushes the branch and opens the PR.
+  - id: publish
+    type: agent
+    agent: implementer
+    publish: true
+    inputs: [pr]
+    instructions: Push the run branch to origin and open the PR with the pr step's TITLE and body. Nothing else.

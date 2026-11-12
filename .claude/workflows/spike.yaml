@@ -1,0 +1,24 @@
+name: spike
+description: Answer a technical question by exploring the code and docs — read-only, ends with a written report and a recommendation.
+readOnly: true
+steps:
+  - id: research
+    type: agent
+    agent: reference-researcher
+    when: references
+  - id: explore
+    type: agent
+    agent: feature-designer
+    inputs: [research]
+    instructions: |
+      This is a spike, not a build. Investigate the question in the Task: read the relevant code, check library docs if needed,
+      and lay out the realistic options with evidence (file paths, measurements, doc links), trade-offs and unknowns.
+      Skip the Build plan section; replace it with "Options".
+  - id: report
+    type: agent
+    agent: feature-designer
+    inputs: [research, explore]
+    instructions: |
+      Write the final spike report from the explore output: Question, Short answer, What we found (with evidence),
+      Options compared, Recommendation, Next steps (as tickets someone could pick up), Open questions.
+      Re-check any claim you're not sure of against the code.
